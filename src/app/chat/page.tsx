@@ -11,6 +11,7 @@ import { getAccessToken } from "@/lib/auth";
 export default function ChatPage() {
   const router = useRouter();
 
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   const [selectedConversationId, setSelectedConversationId] = useState<
@@ -50,25 +51,57 @@ export default function ChatPage() {
   }
 
   return (
-    <main className="flex min-h-screen bg-zinc-950 text-zinc-100">
-      <Sidebar
-        selectedConversationId={selectedConversationId}
-        refreshKey={refreshKey}
-        onSelectConversation={(conversationId) => {
-          setSelectedConversationId(conversationId);
-        }}
-        onNewChat={() => {
-          setSelectedConversationId(null);
-        }}
-        onUploadSuccess={handleUploadSuccess}
-      />
+    <main className="flex h-screen overflow-hidden bg-zinc-950 text-zinc-100">
+      {sidebarOpen ? (
+        <Sidebar
+          selectedConversationId={selectedConversationId}
+          refreshKey={refreshKey}
+          onSelectConversation={(conversationId) => {
+            setSelectedConversationId(conversationId);
+          }}
+          onNewChat={() => {
+            setSelectedConversationId(null);
+          }}
+          onUploadSuccess={handleUploadSuccess}
+          onCloseSidebar={() => {
+            setSidebarOpen(false);
+          }}
+        />
+      ) : (
+        <aside className="flex h-screen w-14 shrink-0 flex-col items-center border-r border-zinc-800 bg-zinc-950 py-4">
+          <button
+            type="button"
+            title="Hiện sidebar"
+            onClick={() => setSidebarOpen(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-lg text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
+          >
+            ☰
+          </button>
 
-      <ChatWindow
-        conversationId={selectedConversationId}
-        refreshKey={refreshKey}
-        onMessageSent={refreshSidebar}
-        onUploadSuccess={handleUploadSuccess}
-      />
+          <div className="mt-4 h-px w-8 bg-zinc-800" />
+
+          <button
+            type="button"
+            title="Tạo đoạn chat mới"
+            onClick={() => {
+              setSidebarOpen(true);
+              setSelectedConversationId(null);
+            }}
+            className="mt-4 flex h-10 w-10 items-center justify-center rounded-xl text-lg text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
+          >
+            ＋
+          </button>
+        </aside>
+      )}
+
+      <div className="flex min-w-0 flex-1">
+        <ChatWindow
+          conversationId={selectedConversationId}
+          refreshKey={refreshKey}
+          onMessageSent={refreshSidebar}
+          onUploadSuccess={handleUploadSuccess}
+        />
+      </div>
     </main>
   );
 }

@@ -47,7 +47,8 @@ export default function ChatWindow({
   onMessageSent,
   onUploadSuccess,
 }: ChatWindowProps) {
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const typingIntervalRef = useRef<number | null>(null);
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [fileName, setFileName] = useState("");
@@ -58,7 +59,25 @@ export default function ChatWindow({
 
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [typing, setTyping] = useState(false);
   const [error, setError] = useState("");
+
+  function clearTypingInterval() {
+    if (typingIntervalRef.current !== null) {
+      window.clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+  }
+
+  function scrollChatToBottom() {
+    requestAnimationFrame(() => {
+      const container = chatScrollRef.current;
+
+      if (!container) return;
+
+      container.scrollTop = container.scrollHeight;
+    });
+  }
 
   async function loadMessages(selectedId: string) {
     setLoading(true);
@@ -72,7 +91,6 @@ export default function ChatWindow({
 
       setMessages(messagesResponse.messages);
       setFileName(messagesResponse.file_name || "");
-
       setDocuments(conversationResponse.documents || []);
     } catch (err) {
       if (err instanceof Error) {
@@ -83,6 +101,75 @@ export default function ChatWindow({
     } finally {
       setLoading(false);
     }
+  }
+
+  async function reloadConversationDetail(selectedId: string) {
+    try {
+      const conversationResponse = await getConversation(selectedId);
+
+      setDocuments(conversationResponse.documents || []);
+      setFileName(conversationResponse.file_name || "");
+    } catch {
+      // Không chặn UI nếu chỉ lỗi reload documents.
+    }
+  }
+
+  function typeAssistantMessage(params: {
+    conversationId: string;
+    fullAnswer: string;
+    sources: Message["sources"];
+    onDone?: () => void;
+  }) {
+    clearTypingInterval();
+
+    const assistantMessageId = `temp-assistant-${Date.now()}-${Math.random()}`;
+
+    const emptyAssistantMessage: Message = {
+      message_id: assistantMessageId,
+      user_id: "current-user",
+      conversation_id: params.conversationId,
+      role: "assistant",
+      content: "",
+      sources: [],
+      timestamp: new Date().toISOString(),
+    };
+
+    setTyping(true);
+    setMessages((prev) => [...prev, emptyAssistantMessage]);
+
+    let currentIndex = 0;
+
+    const typingSpeed = 12;
+    const chunkSize = 3;
+
+    typingIntervalRef.current = window.setInterval(() => {
+      currentIndex += chunkSize;
+
+      const isFinished = currentIndex >= params.fullAnswer.length;
+
+      const nextContent = params.fullAnswer.slice(
+        0,
+        Math.min(currentIndex, params.fullAnswer.length)
+      );
+
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.message_id === assistantMessageId
+            ? {
+                ...message,
+                content: nextContent,
+                sources: isFinished ? params.sources : [],
+              }
+            : message
+        )
+      );
+
+      if (isFinished) {
+        clearTypingInterval();
+        setTyping(false);
+        params.onDone?.();
+      }
+    }, typingSpeed);
   }
 
   async function handleSendMessage(event: FormEvent<HTMLFormElement>) {
@@ -106,6 +193,8 @@ export default function ChatWindow({
 
     setMessages((prev) => [...prev, userMessage]);
 
+    scrollChatToBottom();
+
     try {
       const response = await sendChatMessage({
         conversation_id: conversationId,
@@ -113,17 +202,19 @@ export default function ChatWindow({
         search_mode: searchMode,
       });
 
-      const assistantMessage = createTempMessage({
+      setSending(false);
+
+      typeAssistantMessage({
         conversationId,
-        role: "assistant",
-        content: response.answer,
+        fullAnswer: response.answer,
         sources: response.sources,
+        onDone: () => {
+          onMessageSent?.();
+        },
       });
-
-      setMessages((prev) => [...prev, assistantMessage]);
-
-      onMessageSent?.();
     } catch (err) {
+      setSending(false);
+
       if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -138,12 +229,13 @@ export default function ChatWindow({
       });
 
       setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setSending(false);
     }
   }
 
   useEffect(() => {
+    clearTypingInterval();
+    setTyping(false);
+
     if (!conversationId) {
       setMessages([]);
       setFileName("");
@@ -154,13 +246,19 @@ export default function ChatWindow({
     }
 
     loadMessages(conversationId);
-  }, [conversationId, refreshKey]);
+  }, [conversationId]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, [messages, sending]);
+    if (!conversationId) return;
+
+    reloadConversationDetail(conversationId);
+  }, [refreshKey, conversationId]);
+
+  useEffect(() => {
+    return () => {
+      clearTypingInterval();
+    };
+  }, []);
 
   if (!conversationId) {
     return (
@@ -188,8 +286,8 @@ export default function ChatWindow({
               {documents.length > 0
                 ? `${documents.length} tài liệu trong đoạn chat này`
                 : fileName
-                ? `Tài liệu: ${fileName}`
-                : "Đang tải tài liệu..."}
+                  ? `Tài liệu: ${fileName}`
+                  : "Đang tải tài liệu..."}
             </p>
           </div>
         </div>
@@ -209,7 +307,10 @@ export default function ChatWindow({
         )}
       </header>
 
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div
+        ref={chatScrollRef}
+        className="flex-1 overflow-y-auto px-6 py-6"
+      >
         {loading && (
           <div className="mx-auto max-w-3xl rounded-2xl border border-zinc-800 bg-zinc-900 p-6 text-sm text-zinc-400">
             Đang tải lịch sử chat...
@@ -236,11 +337,15 @@ export default function ChatWindow({
 
             {sending && (
               <div className="max-w-3xl rounded-2xl border border-zinc-800 bg-zinc-900 px-5 py-4 text-sm text-zinc-400">
-                Assistant đang trả lời...
+                Assistant đang suy nghĩ...
               </div>
             )}
 
-            <div ref={bottomRef} />
+            {typing && (
+              <div className="text-xs text-zinc-600">
+                Assistant đang soạn câu trả lời...
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -256,6 +361,10 @@ export default function ChatWindow({
             title="Ấn vào đây để thêm file vào đoạn chat"
             onUploadSuccess={(uploadedConversationId) => {
               onUploadSuccess?.(uploadedConversationId);
+
+              if (uploadedConversationId === conversationId) {
+                reloadConversationDetail(conversationId);
+              }
             }}
           />
 
@@ -264,7 +373,7 @@ export default function ChatWindow({
             onChange={(event) =>
               setSearchMode(event.target.value as SearchMode)
             }
-            disabled={sending}
+            disabled={sending || typing}
             className="rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-3 text-sm text-zinc-200 outline-none transition focus:border-blue-500 disabled:opacity-60"
           >
             <option value="Instant">Instant</option>
@@ -275,17 +384,17 @@ export default function ChatWindow({
           <input
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
-            disabled={sending}
+            disabled={sending || typing}
             placeholder="Nhập câu hỏi về tài liệu..."
             className="flex-1 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-blue-500 disabled:opacity-60"
           />
 
           <button
             type="submit"
-            disabled={sending || !question.trim()}
+            disabled={sending || typing || !question.trim()}
             className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {sending ? "Đang gửi..." : "Gửi"}
+            {sending ? "Đang gửi..." : typing ? "Đang trả lời..." : "Gửi"}
           </button>
         </form>
       </footer>

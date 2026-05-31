@@ -24,6 +24,8 @@ export type Conversation = {
   file_name?: string;
   documents_count?: number;
   documents?: ConversationDocument[];
+  model_name?: string;
+  model_label?: string;
   created_at: string;
   updated_at: string;
 };
@@ -34,6 +36,16 @@ export type ConversationListResponse = {
   conversations: Conversation[];
 };
 
+export type EmbeddingModelName =
+  | "AITeamVN/Vietnamese_Embedding"
+  | "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2";
+
+export type EmbeddingModelOption = {
+  name: EmbeddingModelName;
+  label: string;
+  description: string;
+};
+
 export type UploadResponse = {
   message: string;
   conversation_id: string;
@@ -42,6 +54,8 @@ export type UploadResponse = {
   num_chunks: number;
   user_id: string;
   is_new_conversation?: boolean;
+  model_name?: string;
+  model_label?: string;
 };
 
 export type Source = {

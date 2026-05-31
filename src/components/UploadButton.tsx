@@ -10,6 +10,19 @@ import {
 
 import { uploadDocument } from "@/lib/api";
 
+const EMBEDDING_MODELS = [
+  {
+    name: "AITeamVN/Vietnamese_Embedding",
+    label: "AITeamVN Vietnamese Embedding",
+    description: "Phù hợp hơn cho tài liệu tiếng Việt.",
+  },
+  {
+    name: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    label: "Multilingual MiniLM",
+    description: "Model nhẹ, đa ngôn ngữ, tốc độ nhanh hơn.",
+  },
+];
+
 type UploadButtonProps = {
   conversationId?: string | null;
   onUploadSuccess: (conversationId: string) => void;
@@ -43,12 +56,18 @@ export default function UploadButton({
 }: UploadButtonProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [selectedModel, setSelectedModel] = useState(
+    "AITeamVN/Vietnamese_Embedding"
+  );
+  const [showModelPicker, setShowModelPicker] = useState(false);
+
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const isIcon = variant === "icon";
+  const isCreateNewChat = !conversationId && variant === "full";
 
   useEffect(() => {
     if (!uploading) {
@@ -71,6 +90,12 @@ export default function UploadButton({
     if (uploading) return;
 
     setError("");
+
+    if (isCreateNewChat && !showModelPicker) {
+      setShowModelPicker(true);
+      return;
+    }
+
     fileInputRef.current?.click();
   }
 
@@ -97,11 +122,19 @@ export default function UploadButton({
     );
 
     try {
-      const response = await uploadDocument(file, conversationId);
+      const response = await uploadDocument(
+        file,
+        conversationId,
+        conversationId ? undefined : selectedModel
+      );
 
       setStatus(`Đã xử lý xong: ${response.file_name}`);
 
       onUploadSuccess(response.conversation_id);
+
+      if (isCreateNewChat) {
+        setShowModelPicker(false);
+      }
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -150,7 +183,62 @@ export default function UploadButton({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      {isCreateNewChat && showModelPicker && (
+        <div className="space-y-2 rounded-xl border border-zinc-800 bg-zinc-950 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-medium text-zinc-300">
+              Chọn mô hình embedding
+            </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowModelPicker(false);
+                setError("");
+                setStatus("");
+              }}
+              disabled={uploading}
+              className="rounded-lg px-2 py-1 text-xs text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-60"
+            >
+              Hủy
+            </button>
+          </div>
+
+          {EMBEDDING_MODELS.map((model) => (
+            <label
+              key={model.name}
+              className={[
+                "flex cursor-pointer gap-3 rounded-xl border p-3 text-xs transition",
+                selectedModel === model.name
+                  ? "border-blue-600 bg-blue-950/30"
+                  : "border-zinc-800 hover:bg-zinc-900",
+              ].join(" ")}
+            >
+              <input
+                type="radio"
+                name="embedding-model"
+                value={model.name}
+                checked={selectedModel === model.name}
+                onChange={() => setSelectedModel(model.name)}
+                disabled={uploading}
+                className="mt-1"
+              />
+
+              <span>
+                <span className="block font-medium text-zinc-100">
+                  {model.label}
+                </span>
+
+                <span className="mt-1 block leading-5 text-zinc-500">
+                  {model.description}
+                </span>
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
+
       <input
         ref={fileInputRef}
         type="file"
@@ -175,6 +263,8 @@ export default function UploadButton({
             <span className="h-2 w-2 animate-pulse rounded-full bg-blue-400" />
             Đang xử lý tài liệu...
           </span>
+        ) : isCreateNewChat && showModelPicker ? (
+          "Chọn file để tạo đoạn chat"
         ) : (
           label || "+ Tạo đoạn chat mới"
         )}
@@ -183,6 +273,17 @@ export default function UploadButton({
       {status && (
         <div className="rounded-xl border border-blue-900 bg-blue-950/30 px-3 py-2 text-xs leading-5 text-blue-200">
           <div>{status}</div>
+
+          {isCreateNewChat && (
+            <div className="mt-1 text-blue-300/80">
+              Model:{" "}
+              {
+                EMBEDDING_MODELS.find(
+                  (model) => model.name === selectedModel
+                )?.label
+              }
+            </div>
+          )}
 
           {uploading && (
             <div className="mt-1 text-blue-300/80">

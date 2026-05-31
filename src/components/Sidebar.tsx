@@ -20,6 +20,7 @@ type SidebarProps = {
   onSelectConversation: (conversationId: string) => void;
   onNewChat?: () => void;
   onUploadSuccess?: (conversationId: string) => void;
+  onCloseSidebar?: () => void;
 };
 
 export default function Sidebar({
@@ -28,6 +29,7 @@ export default function Sidebar({
   onSelectConversation,
   onNewChat,
   onUploadSuccess,
+  onCloseSidebar,
 }: SidebarProps) {
   const router = useRouter();
 
@@ -144,11 +146,24 @@ export default function Sidebar({
   return (
     <aside className="flex h-screen w-80 flex-col border-r border-zinc-800 bg-zinc-950 text-zinc-100">
       <div className="border-b border-zinc-800 p-4">
-        <h1 className="text-lg font-bold">RAG Chatbot</h1>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold">RAG Chatbot</h1>
 
-        <p className="mt-1 text-xs text-zinc-500">
-          Hỏi đáp dựa trên tài liệu của bạn
-        </p>
+            <p className="mt-1 text-sm text-zinc-400">
+              Hỏi đáp dựa trên tài liệu của bạn
+            </p>
+          </div>
+
+          <button
+            type="button"
+            title="Ẩn sidebar"
+            onClick={onCloseSidebar}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-sm text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
+          >
+            ←
+          </button>
+        </div>
       </div>
 
       <div className="p-3">

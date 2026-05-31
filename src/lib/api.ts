@@ -115,7 +115,8 @@ export async function login(params: {
 
 export async function uploadDocument(
   file: File,
-  conversationId?: string | null
+  conversationId?: string | null,
+  modelName?: string
 ): Promise<UploadResponse> {
   const token = getAccessToken();
 
@@ -131,6 +132,10 @@ export async function uploadDocument(
     formData.append("conversation_id", conversationId);
   }
 
+  if (modelName) {
+    formData.append("model_name", modelName);
+  }
+
   const response = await fetch(`${API_BASE_URL}/upload/`, {
     method: "POST",
     headers: {
@@ -143,10 +148,7 @@ export async function uploadDocument(
   const data = await response.json();
 
   if (!response.ok) {
-    const message =
-      data?.detail || `Upload failed with status ${response.status}`;
-
-    throw new Error(message);
+    throw new Error(data?.detail || "Upload file thất bại.");
   }
 
   return data as UploadResponse;
