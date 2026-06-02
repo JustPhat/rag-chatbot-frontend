@@ -61,21 +61,21 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-4 text-zinc-100">
-      <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900/80 p-8 shadow-2xl">
+    <main className="flex min-h-screen items-center justify-center bg-transparent px-4 text-[var(--text-main)]">
+      <div className="w-full max-w-md rounded-2xl border border-[var(--border-main)] bg-[var(--panel-bg)] p-8 shadow-2xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-main)]">
             Tạo tài khoản
           </h1>
 
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
             Đăng ký để tạo chatbot hỏi đáp trên tài liệu của bạn.
           </p>
         </div>
 
         <form onSubmit={handleRegister} className="space-y-5">
           <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-300">
+            <label className="mb-2 block text-sm font-medium text-[var(--text-main)]">
               Họ tên
             </label>
 
@@ -84,12 +84,12 @@ export default function RegisterPage() {
               value={fullName}
               onChange={(event) => setFullName(event.target.value)}
               placeholder="Nguyễn Văn A"
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              className="w-full rounded-xl border border-[var(--border-main)] bg-[var(--card-bg)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-300">
+            <label className="mb-2 block text-sm font-medium text-[var(--text-main)]">
               Email
             </label>
 
@@ -98,13 +98,13 @@ export default function RegisterPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              className="w-full rounded-xl border border-[var(--border-main)] bg-[var(--card-bg)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-blue-500"
               required
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-300">
+            <label className="mb-2 block text-sm font-medium text-[var(--text-main)]">
               Password
             </label>
 
@@ -113,13 +113,13 @@ export default function RegisterPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="Tối thiểu 6 ký tự"
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              className="w-full rounded-xl border border-[var(--border-main)] bg-[var(--card-bg)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-blue-500"
               required
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-300">
+            <label className="mb-2 block text-sm font-medium text-[var(--text-main)]">
               Xác nhận password
             </label>
 
@@ -128,7 +128,7 @@ export default function RegisterPage() {
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
               placeholder="Nhập lại mật khẩu"
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              className="w-full rounded-xl border border-[var(--border-main)] bg-[var(--card-bg)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-blue-500"
               required
             />
           </div>
@@ -148,12 +148,12 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-zinc-400">
+        <div className="mt-6 text-center text-sm text-[var(--text-muted)]">
           Đã có tài khoản?{" "}
           <button
             type="button"
             onClick={() => router.push("/login")}
-            className="font-medium text-blue-400 hover:text-blue-300"
+            className="font-medium text-blue-500 transition hover:text-blue-400"
           >
             Đăng nhập
           </button>

@@ -24,8 +24,8 @@ function SourceItem({
   const score = formatScore(source.score);
 
   return (
-    <details className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-3">
-      <summary className="cursor-pointer text-xs font-medium text-zinc-300">
+    <details className="rounded-xl border border-[var(--border-main)] bg-[var(--panel-bg-soft)] p-3">
+      <summary className="cursor-pointer text-xs font-medium text-[var(--text-main)]">
         Source {index + 1}
         {source.file_name ? ` • ${source.file_name}` : ""}
         {source.page !== undefined && source.page !== null
@@ -34,7 +34,7 @@ function SourceItem({
         {score ? ` • Score ${score}` : ""}
       </summary>
 
-      <p className="mt-3 whitespace-pre-wrap text-xs leading-5 text-zinc-400">
+      <p className="mt-3 whitespace-pre-wrap text-xs leading-5 text-[var(--text-muted)]">
         {source.text}
       </p>
     </details>
@@ -57,7 +57,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           "max-w-3xl rounded-2xl px-5 py-4 shadow-sm",
           isUser
             ? "bg-blue-600 text-white"
-            : "border border-zinc-800 bg-zinc-900 text-zinc-100",
+            : "border border-[var(--border-main)] bg-[var(--panel-bg)] text-[var(--text-main)]",
         ].join(" ")}
       >
         <div className="mb-2 flex items-center gap-2">
@@ -66,7 +66,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
               "rounded-full px-2 py-0.5 text-xs font-medium",
               isUser
                 ? "bg-blue-500 text-blue-50"
-                : "bg-zinc-800 text-zinc-300",
+                : "bg-[var(--panel-bg-soft)] text-[var(--text-muted)]",
             ].join(" ")}
           >
             {isUser ? "Bạn" : isAssistant ? "Assistant" : message.role}
@@ -76,7 +76,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
             <span
               className={[
                 "text-xs",
-                isUser ? "text-blue-100" : "text-zinc-500",
+                isUser ? "text-blue-100" : "text-[var(--text-muted)]",
               ].join(" ")}
             >
               {new Date(message.timestamp).toLocaleString("vi-VN")}
@@ -90,7 +90,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
         {isAssistant && message.sources && message.sources.length > 0 && (
           <div className="mt-4 space-y-2">
-            <p className="text-xs font-semibold text-zinc-400">
+            <p className="text-xs font-semibold text-[var(--text-muted)]">
               📚 Sources
             </p>
 

@@ -42,8 +42,8 @@ export default function ChatPage() {
 
   if (checkingAuth) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-100">
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 px-6 py-4 text-sm text-zinc-400">
+      <main className="flex min-h-screen items-center justify-center bg-transparent text-[var(--text-main)]">
+        <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--panel-bg)] px-6 py-4 text-sm text-[var(--text-muted)]">
           Đang kiểm tra đăng nhập...
         </div>
       </main>
@@ -51,7 +51,7 @@ export default function ChatPage() {
   }
 
   return (
-    <main className="flex h-screen overflow-hidden bg-zinc-950 text-zinc-100">
+    <main className="flex h-screen overflow-hidden bg-transparent text-[var(--text-main)]">
       {sidebarOpen ? (
         <Sidebar
           selectedConversationId={selectedConversationId}
@@ -68,17 +68,17 @@ export default function ChatPage() {
           }}
         />
       ) : (
-        <aside className="flex h-screen w-14 shrink-0 flex-col items-center border-r border-zinc-800 bg-zinc-950 py-4">
+        <aside className="flex h-screen w-14 shrink-0 flex-col items-center border-r border-[var(--border-main)] bg-[var(--app-bg)] py-4">
           <button
             type="button"
             title="Hiện sidebar"
             onClick={() => setSidebarOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-lg text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border-main)] bg-[var(--panel-bg)] text-lg text-[var(--text-muted)] transition hover:bg-[var(--panel-bg-soft)] hover:text-[var(--text-main)]"
           >
             ☰
           </button>
 
-          <div className="mt-4 h-px w-8 bg-zinc-800" />
+          <div className="mt-4 h-px w-8 bg-[var(--border-main)]" />
 
           <button
             type="button"
@@ -87,7 +87,7 @@ export default function ChatPage() {
               setSidebarOpen(true);
               setSelectedConversationId(null);
             }}
-            className="mt-4 flex h-10 w-10 items-center justify-center rounded-xl text-lg text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
+            className="mt-4 flex h-10 w-10 items-center justify-center rounded-xl text-lg text-[var(--text-muted)] transition hover:bg-[var(--panel-bg)] hover:text-[var(--text-main)]"
           >
             ＋
           </button>
@@ -105,3 +105,4 @@ export default function ChatPage() {
     </main>
   );
 }
+

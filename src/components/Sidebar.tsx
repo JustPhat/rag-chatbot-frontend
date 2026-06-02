@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { MouseEvent } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronUp, LogOut, Settings } from "lucide-react";
 
 import { clearAuth } from "@/lib/auth";
 import {
@@ -36,6 +37,10 @@ export default function Sidebar({
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+
+  const userName = "Phat";
+  const userEmail = "newuser@gmail.com";
 
   async function loadConversations() {
     setLoading(true);
@@ -85,16 +90,17 @@ export default function Sidebar({
       }
     }
   }
+
   async function handleRenameConversation(
     event: MouseEvent<HTMLButtonElement>,
     conversationId: string,
     currentTitle: string
-    ) {
+  ) {
     event.stopPropagation();
 
     const newTitle = window.prompt(
-        "Nhập tên mới cho đoạn chat:",
-        currentTitle
+      "Nhập tên mới cho đoạn chat:",
+      currentTitle
     );
 
     if (newTitle === null) return;
@@ -102,37 +108,39 @@ export default function Sidebar({
     const trimmedTitle = newTitle.trim();
 
     if (!trimmedTitle) {
-        alert("Tên đoạn chat không được để trống.");
-        return;
+      alert("Tên đoạn chat không được để trống.");
+      return;
     }
 
     if (trimmedTitle === currentTitle) return;
 
     try {
-        await updateConversationTitle(
-        conversationId,
-        trimmedTitle
-        );
+      await updateConversationTitle(conversationId, trimmedTitle);
 
-        setConversations((prev) =>
+      setConversations((prev) =>
         prev.map((item) =>
-            item.conversation_id === conversationId
+          item.conversation_id === conversationId
             ? {
                 ...item,
                 title: trimmedTitle,
                 updated_at: new Date().toISOString(),
-                }
+              }
             : item
         )
-        );
+      );
     } catch (err) {
-        if (err instanceof Error) {
+      if (err instanceof Error) {
         alert(err.message);
-        } else {
+      } else {
         alert("Đổi tên đoạn chat thất bại.");
-        }
+      }
     }
-    }
+  }
+
+  function handleOpenSettings() {
+    setProfileMenuOpen(false);
+    router.push("/settings");
+  }
 
   function handleLogout() {
     clearAuth();
@@ -141,147 +149,197 @@ export default function Sidebar({
 
   useEffect(() => {
     loadConversations();
-    }, [refreshKey]);
+  }, [refreshKey]);
 
   return (
-    <aside className="flex h-screen w-80 flex-col border-r border-zinc-800 bg-zinc-950 text-zinc-100">
-      <div className="border-b border-zinc-800 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-bold">RAG Chatbot</h1>
+  <aside className="flex h-screen w-80 flex-col border-r border-[var(--border-main)] bg-[var(--panel-bg)] text-[var(--text-main)]">
+    <div className="border-b border-[var(--border-main)] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-[var(--text-main)]">
+            RAG Chatbot
+          </h1>
 
-            <p className="mt-1 text-sm text-zinc-400">
-              Hỏi đáp dựa trên tài liệu của bạn
-            </p>
-          </div>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
+            Hỏi đáp dựa trên tài liệu của bạn
+          </p>
+        </div>
+
+        <button
+          type="button"
+          title="Ẩn sidebar"
+          onClick={onCloseSidebar}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--border-main)] bg-[var(--panel-bg)] text-sm text-[var(--text-muted)] transition hover:bg-[var(--panel-bg-soft)] hover:text-[var(--text-main)]"
+        >
+          ←
+        </button>
+      </div>
+    </div>
+
+    <div className="p-3">
+      <UploadButton
+        conversationId={null}
+        label="+ Tạo đoạn chat mới"
+        onUploadSuccess={(conversationId) => {
+          onUploadSuccess?.(conversationId);
+        }}
+      />
+    </div>
+
+    <div className="flex-1 overflow-y-auto px-3 pb-3">
+      {loading && (
+        <div className="rounded-xl border border-[var(--border-main)] bg-[var(--panel-bg)] p-4 text-sm text-[var(--text-muted)]">
+          Đang tải danh sách chat...
+        </div>
+      )}
+
+      {!loading && error && (
+        <div className="rounded-xl border border-red-800 bg-red-950/40 p-4 text-sm text-red-300">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && conversations.length === 0 && (
+        <div className="rounded-xl border border-[var(--border-main)] bg-[var(--panel-bg)] p-4 text-sm text-[var(--text-muted)]">
+          Chưa có đoạn chat nào.
+        </div>
+      )}
+
+      {!loading && !error && conversations.length > 0 && (
+        <div className="space-y-2">
+          {conversations.map((conversation) => {
+            const active =
+              selectedConversationId === conversation.conversation_id;
+
+            return (
+              <div
+                key={conversation.conversation_id}
+                role="button"
+                tabIndex={0}
+                onClick={() =>
+                  onSelectConversation(conversation.conversation_id)
+                }
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelectConversation(conversation.conversation_id);
+                  }
+                }}
+                className={[
+                  "group w-full cursor-pointer rounded-xl border px-3 py-3 text-left outline-none transition",
+                  active
+                    ? "border-blue-600 bg-blue-950/40"
+                    : "border-[var(--border-main)] hover:bg-[var(--panel-bg)]",
+                ].join(" ")}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-[var(--text-main)]">
+                      {conversation.title}
+                    </p>
+
+                    <p className="mt-1 truncate text-xs text-[var(--text-muted)]">
+                      {conversation.file_name}
+                    </p>
+
+                    <p className="mt-2 text-xs text-[var(--text-soft)]">
+                      {new Date(conversation.updated_at).toLocaleTimeString(
+                        "vi-VN"
+                      )}{" "}
+                      {new Date(conversation.updated_at).toLocaleDateString(
+                        "vi-VN"
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={(event) =>
+                        handleRenameConversation(
+                          event,
+                          conversation.conversation_id,
+                          conversation.title
+                        )
+                      }
+                      className="rounded-lg px-2 py-1 text-xs text-[var(--text-muted)] transition hover:bg-[var(--panel-bg-soft)] hover:text-[var(--text-main)]"
+                    >
+                      Sửa
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(event) =>
+                        handleDeleteConversation(
+                          event,
+                          conversation.conversation_id
+                        )
+                      }
+                      className="rounded-lg px-2 py-1 text-xs text-[var(--text-muted)] transition hover:bg-red-950/40 hover:text-red-300"
+                    >
+                      Xóa
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+
+    <footer className="relative border-t border-[var(--border-main)] p-3">
+      {profileMenuOpen && (
+        <div className="absolute bottom-20 left-3 right-3 rounded-2xl border border-[var(--border-main)] bg-[var(--panel-bg)] p-2 shadow-2xl">
+          <button
+            type="button"
+            onClick={handleOpenSettings}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm text-[var(--text-muted)] transition hover:bg-[var(--panel-bg-soft)] hover:text-[var(--text-main)]"
+          >
+            <Settings size={17} strokeWidth={2} />
+            <span>Cài đặt</span>
+          </button>
 
           <button
             type="button"
-            title="Ẩn sidebar"
-            onClick={onCloseSidebar}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-sm text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm text-red-300 transition hover:bg-red-950/40 hover:text-red-200"
           >
-            ←
+            <LogOut size={17} strokeWidth={2} />
+            <span>Đăng xuất</span>
           </button>
         </div>
-      </div>
+      )}
 
-      <div className="p-3">
-        <UploadButton
-          conversationId={null}
-          label="+ Tạo đoạn chat mới"
-          onUploadSuccess={(conversationId) => {
-            onUploadSuccess?.(conversationId);
-          }}
+      <button
+        type="button"
+        onClick={() => setProfileMenuOpen((prev) => !prev)}
+        className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition hover:bg-[var(--panel-bg)]"
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-500 text-xs font-bold text-white">
+          P
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-[var(--text-main)]">
+            {userName}
+          </p>
+
+          <p className="truncate text-xs text-[var(--text-muted)]">
+            {userEmail}
+          </p>
+        </div>
+
+        <ChevronUp
+          size={16}
+          strokeWidth={2}
+          className={[
+            "shrink-0 text-[var(--text-muted)] transition",
+            profileMenuOpen ? "rotate-180" : "",
+          ].join(" ")}
         />
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-3 pb-3">
-        {loading && (
-          <div className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-400">
-            Đang tải danh sách chat...
-          </div>
-        )}
-
-        {!loading && error && (
-          <div className="rounded-xl border border-red-800 bg-red-950/40 p-4 text-sm text-red-300">
-            {error}
-          </div>
-        )}
-
-        {!loading && !error && conversations.length === 0 && (
-          <div className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-500">
-            Chưa có đoạn chat nào.
-          </div>
-        )}
-
-        {!loading && !error && conversations.length > 0 && (
-          <div className="space-y-2">
-            {conversations.map((conversation) => {
-              const active =
-                selectedConversationId === conversation.conversation_id;
-
-              return (
-                <div
-                    key={conversation.conversation_id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() =>
-                    onSelectConversation(conversation.conversation_id)
-                    }
-                    onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        onSelectConversation(conversation.conversation_id);
-                    }
-                    }}
-                    className={[
-                    "group w-full cursor-pointer rounded-xl border px-3 py-3 text-left transition outline-none",
-                    active
-                        ? "border-blue-600 bg-blue-950/40"
-                        : "border-zinc-800 hover:bg-zinc-900",
-                    ].join(" ")}
-                >
-                    <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-zinc-100">
-                        {conversation.title}
-                        </p>
-
-                        <p className="mt-1 truncate text-xs text-zinc-500">
-                        {conversation.file_name}
-                        </p>
-                    </div>
-
-                    <div className="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100">
-                        <button
-                        type="button"
-                        onClick={(event) =>
-                            handleRenameConversation(
-                            event,
-                            conversation.conversation_id,
-                            conversation.title
-                            )
-                        }
-                        className="rounded-lg px-2 py-1 text-xs text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-100"
-                        >
-                        Sửa
-                        </button>
-
-                        <button
-                        type="button"
-                        onClick={(event) =>
-                            handleDeleteConversation(
-                            event,
-                            conversation.conversation_id
-                            )
-                        }
-                        className="rounded-lg px-2 py-1 text-xs text-zinc-500 transition hover:bg-red-950 hover:text-red-300"
-                        >
-                        Xóa
-                        </button>
-                    </div>
-                    </div>
-
-                    <p className="mt-2 text-[11px] text-zinc-600">
-                    {new Date(conversation.updated_at).toLocaleString("vi-VN")}
-                    </p>
-                </div>
-                );
-            })}
-          </div>
-        )}
-      </div>
-
-      <div className="border-t border-zinc-800 p-3">
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="w-full rounded-xl px-4 py-3 text-left text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-zinc-100"
-        >
-          Đăng xuất
-        </button>
-      </div>
-    </aside>
-  );
+      </button>
+    </footer>
+  </aside>
+);
 }

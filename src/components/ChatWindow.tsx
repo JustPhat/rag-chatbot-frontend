@@ -262,11 +262,13 @@ export default function ChatWindow({
 
   if (!conversationId) {
     return (
-      <section className="flex h-screen flex-1 items-center justify-center bg-zinc-950 text-zinc-100">
-        <div className="max-w-xl rounded-2xl border border-zinc-800 bg-zinc-900 p-8 text-center">
-          <h2 className="text-2xl font-bold">Chưa chọn đoạn chat</h2>
+      <section className="flex h-screen flex-1 items-center justify-center bg-transparent text-[var(--text-main)]">
+        <div className="max-w-xl rounded-2xl border border-[var(--border-main)] bg-[var(--panel-bg)] p-8 text-center">
+          <h2 className="text-2xl font-bold text-[var(--text-main)]">
+            Chưa chọn đoạn chat
+          </h2>
 
-          <p className="mt-3 text-sm leading-6 text-zinc-400">
+          <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
             Chọn một đoạn chat ở sidebar hoặc tạo đoạn chat mới bằng cách upload
             tài liệu.
           </p>
@@ -276,13 +278,15 @@ export default function ChatWindow({
   }
 
   return (
-    <section className="flex h-screen flex-1 flex-col bg-zinc-950 text-zinc-100">
-      <header className="border-b border-zinc-800 px-6 py-4">
+    <section className="flex h-screen flex-1 flex-col bg-transparent text-[var(--text-main)]">
+      <header className="border-b border-[var(--border-main)] px-6 py-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold">Lịch sử hội thoại</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-main)]">
+              Lịch sử hội thoại
+            </h2>
 
-            <p className="mt-1 text-xs text-zinc-500">
+            <p className="mt-1 text-xs text-[var(--text-muted)]">
               {documents.length > 0
                 ? `${documents.length} tài liệu trong đoạn chat này`
                 : fileName
@@ -297,7 +301,7 @@ export default function ChatWindow({
             {documents.map((document) => (
               <span
                 key={document.document_id}
-                className="rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1 text-xs text-zinc-300"
+                className="rounded-full border border-[var(--border-main)] bg-[var(--panel-bg)] px-3 py-1 text-xs text-[var(--text-muted)]"
                 title={`${document.num_chunks || 0} chunks`}
               >
                 📄 {document.file_name}
@@ -312,7 +316,7 @@ export default function ChatWindow({
         className="flex-1 overflow-y-auto px-6 py-6"
       >
         {loading && (
-          <div className="mx-auto max-w-3xl rounded-2xl border border-zinc-800 bg-zinc-900 p-6 text-sm text-zinc-400">
+          <div className="mx-auto max-w-3xl rounded-2xl border border-[var(--border-main)] bg-[var(--panel-bg)] p-6 text-sm text-[var(--text-muted)]">
             Đang tải lịch sử chat...
           </div>
         )}
@@ -324,7 +328,7 @@ export default function ChatWindow({
         )}
 
         {!loading && !error && messages.length === 0 && (
-          <div className="mx-auto max-w-3xl rounded-2xl border border-zinc-800 bg-zinc-900 p-6 text-sm text-zinc-400">
+          <div className="mx-auto max-w-3xl rounded-2xl border border-[var(--border-main)] bg-[var(--panel-bg)] p-6 text-sm text-[var(--text-muted)]">
             Đoạn chat này chưa có tin nhắn nào. Hãy nhập câu hỏi bên dưới.
           </div>
         )}
@@ -336,13 +340,13 @@ export default function ChatWindow({
             ))}
 
             {sending && (
-              <div className="max-w-3xl rounded-2xl border border-zinc-800 bg-zinc-900 px-5 py-4 text-sm text-zinc-400">
+              <div className="max-w-3xl rounded-2xl border border-[var(--border-main)] bg-[var(--panel-bg)] px-5 py-4 text-sm text-[var(--text-muted)]">
                 Assistant đang suy nghĩ...
               </div>
             )}
 
             {typing && (
-              <div className="text-xs text-zinc-600">
+              <div className="text-xs text-[var(--text-muted)]">
                 Assistant đang soạn câu trả lời...
               </div>
             )}
@@ -350,7 +354,7 @@ export default function ChatWindow({
         )}
       </div>
 
-      <footer className="border-t border-zinc-800 px-6 py-4">
+      <footer className="border-t border-[var(--border-main)] px-6 py-4">
         <form
           onSubmit={handleSendMessage}
           className="mx-auto flex max-w-5xl items-center gap-3"
@@ -374,11 +378,11 @@ export default function ChatWindow({
               setSearchMode(event.target.value as SearchMode)
             }
             disabled={sending || typing}
-            className="rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-3 text-sm text-zinc-200 outline-none transition focus:border-blue-500 disabled:opacity-60"
+            className="rounded-xl border border-[var(--border-main)] bg-[var(--panel-bg)] px-3 py-3 text-sm text-[var(--text-main)] outline-none transition focus:border-blue-500 disabled:opacity-60"
           >
-            <option value="Instant">Instant</option>
-            <option value="Balanced">Balanced</option>
-            <option value="Deep">Deep</option>
+            <option value="Instant">Nhanh</option>
+            <option value="Balanced">Vừa</option>
+            <option value="Deep">Tìm kiếm sâu</option>
           </select>
 
           <input
@@ -386,7 +390,7 @@ export default function ChatWindow({
             onChange={(event) => setQuestion(event.target.value)}
             disabled={sending || typing}
             placeholder="Nhập câu hỏi về tài liệu..."
-            className="flex-1 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-blue-500 disabled:opacity-60"
+            className="flex-1 rounded-xl border border-[var(--border-main)] bg-[var(--panel-bg)] px-4 py-3 text-sm text-[var(--text-main)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-blue-500 disabled:opacity-60"
           />
 
           <button
@@ -401,3 +405,4 @@ export default function ChatWindow({
     </section>
   );
 }
+

@@ -1,8 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #09090b;
+  --foreground: #f4f4f5;
+
+  --app-bg: #09090b;
+  --panel-bg: #18181b;
+  --panel-bg-soft: #111113;
+  --card-bg: #09090b;
+
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --text-soft: #52525b;
+
+  --border-main: #27272a;
 }
 
 @theme inline {
@@ -12,15 +23,65 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html.light-theme {
+  --background: #f4f4f5;
+  --foreground: #18181b;
+
+  --app-bg: #f4f4f5;
+  --panel-bg: #ffffff;
+  --panel-bg-soft: #f9fafb;
+  --card-bg: #ffffff;
+
+  --text-main: #18181b;
+  --text-muted: #71717a;
+  --text-soft: #a1a1aa;
+
+  --border-main: #d4d4d8;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  min-height: 100vh;
+  background: var(--app-bg);
+  color: var(--text-main);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Background presets */
+body.bg-preset-default {
+  --app-bg: #09090b;
+}
+
+html.light-theme body.bg-preset-default {
+  --app-bg: #f4f4f5;
+}
+
+body.bg-preset-blue {
+  --app-bg: #020617;
+}
+
+html.light-theme body.bg-preset-blue {
+  --app-bg: #dbeafe;
+}
+
+body.bg-preset-gray {
+  --app-bg: #18181b;
+}
+
+html.light-theme body.bg-preset-gray {
+  --app-bg: #e4e4e7;
+}
+
+/* Gradient preset */
+body.bg-preset-gradient {
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.22), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.16), transparent 30%),
+    var(--app-bg);
+}
+
+html.light-theme body.bg-preset-gradient {
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.12), transparent 30%),
+    var(--app-bg);
 }
