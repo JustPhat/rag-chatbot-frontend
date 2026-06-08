@@ -14,6 +14,12 @@ import type {
   UploadResponse,
 } from "@/types/api";
 
+export type CurrentUser = {
+  user_id: string;
+  email: string;
+  full_name?: string | null;
+};
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
@@ -109,6 +115,9 @@ export async function login(params: {
   });
 }
 
+export async function getCurrentUser(): Promise<CurrentUser> {
+  return apiRequest<CurrentUser>("/auth/me");
+}
 // =========================
 // Upload
 // =========================

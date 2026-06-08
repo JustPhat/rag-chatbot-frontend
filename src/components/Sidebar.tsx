@@ -5,7 +5,7 @@ import type { MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronUp, LogOut, Settings } from "lucide-react";
 
-import { clearAuth } from "@/lib/auth";
+import { clearAuth, getStoredUser } from "@/lib/auth";
 import {
   deleteConversation,
   getConversations,
@@ -14,7 +14,7 @@ import {
 
 import type { Conversation } from "@/types/api";
 import UploadButton from "@/components/UploadButton";
-
+import { getCurrentUser } from "@/lib/api";
 type SidebarProps = {
   selectedConversationId?: string | null;
   refreshKey?: number;
@@ -39,9 +39,26 @@ export default function Sidebar({
   const [error, setError] = useState("");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
-  const userName = "Phat";
-  const userEmail = "newuser@gmail.com";
+  const [userName, setUserName] = useState("Người dùng");
+  const [userEmail, setUserEmail] = useState("");
 
+  async function loadCurrentUser() {
+    const storedUser = getStoredUser();
+
+    if (storedUser) {
+      setUserName(storedUser.full_name || storedUser.email || "Người dùng");
+      setUserEmail(storedUser.email || "");
+    }
+
+    try {
+      const user = await getCurrentUser();
+
+      setUserName(user.full_name || user.email || "Người dùng");
+      setUserEmail(user.email || "");
+    } catch {
+      // Nếu API /auth/me lỗi thì vẫn giữ thông tin từ localStorage.
+    }
+  }
   async function loadConversations() {
     setLoading(true);
     setError("");
@@ -149,6 +166,7 @@ export default function Sidebar({
 
   useEffect(() => {
     loadConversations();
+    loadCurrentUser();
   }, [refreshKey]);
 
   return (

@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+
+.env
+.env.local
+.env.*
+!.env.example
+
+.git
+.gitignore
+
+npm-debug.log
+yarn-error.log
+.DS_Store
